@@ -4,8 +4,6 @@
 //         e.innerText= e.style.width;
 //     })
 // }
-debugger;
-
 let jsInitChecktimer;
 
 let status = {
@@ -15,27 +13,47 @@ let status = {
 };
 
 function checkForJS_Finish() {
-  if (document.location.pathname !== "/organization/home/") return status.STOP;
+  const pathToCheck = ["/learn/v4/overview", "/organization/home"];
+  const currentUrl = document.location.pathname;
+  const isLearnOverView = currentUrl.includes(pathToCheck[0]);
+  const isHome = currentUrl.includes(pathToCheck[1]);
+  if (!(isLearnOverView || isHome)) {
+    clearInterval(jsInitChecktimer);
+    return status.STOP;
+  }
 
-  var learningProgress = [
+  var homeLearningProgress = [
     ...document.getElementsByClassName("ufb-learning-unit")
   ];
 
-  if (learningProgress.length > 0) {
+  var isLearningOverviewProgress = [
+    ...document.querySelectorAll('[data-purpose="course-progress-indicator"]')
+  ];
+  if ( homeLearningProgress.length > 0 || isLearningOverviewProgress.length > 0) {
     clearInterval(jsInitChecktimer);
-
-    var a = [...document.getElementsByClassName("progress-bar-default--white")];
-    if (a.length > 0) {
-      a.map((e,i) => {
-        var persentageElement = document.getElementById(`completed_persentage${i}`);
-        if (persentageElement) persentageElement.remove();
-        e.insertAdjacentHTML(
-          "afterend",
-          `<div id='completed_persentage${i}'>${e.style.width}</div>`
-        );
-      });
+    if (isHome) {
+      var a = [
+        ...document.getElementsByClassName("progress-bar-default--white")
+      ];
+      if (a.length > 0) {
+        a.map((e, i) => {
+          var persentageElement = document.getElementById(
+            `completed_persentage${i}`
+          );
+          if (persentageElement) persentageElement.remove();
+          e.insertAdjacentHTML(
+            "afterend",
+            `<div id='completed_persentage${i}'>${e.style.width}</div>`
+          );
+        });
+      }
+      return;
+    } else if (isLearnOverView) {
+      isLearningOverviewProgress[0].parentElement.insertAdjacentHTML(
+        "beforebegin",
+        `<div id='completed_persentage'>${isLearningOverviewProgress[0].style.width}</div>`
+      );
     }
-    return;
   }
   return status.WAIT;
 }
